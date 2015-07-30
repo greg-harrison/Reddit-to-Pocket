@@ -7,12 +7,11 @@ var express = require('express'),
     prettyjson = require('prettyjson'),
     q = require('q');
 
-var subreddits = ['webdev', 'opensource', 'frontend', 'programming'];
+var subreddits = ['webdev', 'opensource', 'frontend', 'programming', 'javascript'];
 var arg2 = process.argv[2] || 'all';
 var subListDefault = setSubListDefault(arg2);
 var subList = process.argv[4] || subListDefault;
 var limit = process.argv[3] || 2;
-var timePeriod = "day";
 var timeOccurred = "";
 var pocketArray = [];
 
@@ -25,14 +24,14 @@ function setSubListDefault (arg2) {
     }
 }
 
-var buildRequestUrl = function (arg2, subList, timePeriod, limit) {
+var buildRequestUrl = function (arg2, subList, limit) {
     if (arg2 == 'each') {
         subList.forEach(function (element) {
-            var url = "http://www.reddit.com/r/" + element + "/top.json?t="+ timePeriod +"&limit=" + limit + "";
+            var url = "http://www.reddit.com/r/" + element + "/hot.json?limit=" + limit + "";
             request(url, returnAll);
         });
     } else {
-        var url = "http://www.reddit.com/r/" + subList + "/top.json?t="+ timePeriod +"&limit=" + limit + "";
+        var url = "http://www.reddit.com/r/" + subList + "/hot.json?limit=" + limit + "";
         request(url, returnAll);
     }
 };
@@ -44,7 +43,7 @@ var buildRequestUrl = function (arg2, subList, timePeriod, limit) {
 function returnAll(error, response, body) {
     if (!error && response.statusCode == 200) {
         var resp = JSON.parse(body);
-        var respLength = resp.data.children.length;
+        var respLength = limit || resp.data.children.length;
 
         var pocketObject = {};
 
@@ -101,12 +100,12 @@ function returnAll(error, response, body) {
     }
 }
 
-function sendToPocket(error, response, body){
+buildRequestUrl(arg2, subList, limit);
 
-}
-
-buildRequestUrl(arg2, subList, timePeriod, limit);
-
+//function sendToPocket(error, response, body){
+//
+//}
+//
 //var action = "add";
 //var
 //var pocketUrl = "https://getpocket.com/v3/send?actions=%5B%7B%22action%22%3A%22archive%22%2C%22time%22%3A1348853312%2C%22item_id%22%3A229279689%7D%5D&access_token=[ACCESS_TOKEN]&consumer_key=[CONSUMER_KEY]";
