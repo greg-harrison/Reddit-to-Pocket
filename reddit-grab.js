@@ -92,6 +92,18 @@ function returnAll(error, response, body) {
         }
 
         console.log("\n" + pocketArray.length + " items packaged in array");
+
+
+        //TODO - Get a print out the tags on each of the items in the PocketArray
+        // I just want to see which subs have more hot things than others... just for fun.
+        for(pocketObject in pocketArray) {
+            console.log(pocketObject.title);
+        }
+//        didn't work
+
+//        pocketArray.forEach(function(element, index) {
+//            console.log("\n" + index + " " + element.title);
+//        });
         console.log('\nLast execution: ' + moment().format("MM/D, h:mm:ss a"));
         console.log('=======================================================\n');
 
