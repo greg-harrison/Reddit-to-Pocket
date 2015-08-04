@@ -1,8 +1,16 @@
+// Todo:
+//  Need to fix the issue where using the Each parameter sends 40 duped items to pocket, and causes the android app to crash ;D
+//  Clean up unused variables/libraries
+//  Need to figure out why I'm getting "{action_results: [ false ], status: 1}" when I run '$node reddit-grab all 1'
+//  Research the best way to convert this to a web app.
+
 var express = require('express'),
+    config = require('./config'),
     app = express(),
     request = require('request'),
     http = require('http'),
     process = require('process'),
+    GetPocket = require('node-getpocket'),
     moment = require('moment'),
     prettyjson = require('prettyjson'),
     q = require('q');
@@ -12,7 +20,6 @@ var arg2 = process.argv[2] || 'all';
 var subListDefault = setSubListDefault(arg2);
 var subList = process.argv[4] || subListDefault;
 var limit = process.argv[3] || 2;
-var timeOccurred = "";
 var pocketArray = [];
 
 function setSubListDefault (arg2) {
@@ -36,18 +43,13 @@ var buildRequestUrl = function (arg2, subList, limit) {
     }
 };
 
-//var someOptions = {
-//    url: "http://www.reddit.com/r/" + subreddits[i] + "/top.json?t="+ timePeriod +"&limit=" + limit + ""
-//};
-
 function returnAll(error, response, body) {
     if (!error && response.statusCode == 200) {
         var resp = JSON.parse(body);
         var respLength = limit || resp.data.children.length;
 
-        var pocketObject = {};
-
         for (var i = 0; i < respLength; i++) {
+            var pocketObject = {};
             var subredditData = "";
             var titleData = "";
             var linkData = "";
@@ -61,13 +63,11 @@ function returnAll(error, response, body) {
 
 
             if (resp.data.children[i].kind !== "t3" || goodLink !== -1) {
-
                 console.log('\nNumber: ', i+1);
                 console.log('This is not a pocketable object');
                 if (goodLink > 0) {
                     console.log("Reason: We ain't got time for IMGUR BS.");
                 }
-
             } else {
                 subredditData = resp.data.children[i].data.subreddit;
                 titleData = resp.data.children[i].data.title;
@@ -81,32 +81,23 @@ function returnAll(error, response, body) {
                 console.log('Link: ', linkData);
                 console.log('Tags: ', tagData);
 
-                pocketObject.item_id = timeOccurred+"_"+i+1;
+                pocketObject.action = "add";
+                pocketObject.item_id = timeData+"_"+i;
                 pocketObject.tags = tagData;
                 pocketObject.time = timeData;
                 pocketObject.title = titleData;
                 pocketObject.url = linkData;
 
                 pocketArray.push(pocketObject);
+                console.log(pocketArray);
             }
         }
 
+        sendToPocket(pocketArray);
+
         console.log("\n" + pocketArray.length + " items packaged in array");
-
-
-        //TODO - Get a print out the tags on each of the items in the PocketArray
-        // I just want to see which subs have more hot things than others... just for fun.
-        for(pocketObject in pocketArray) {
-            console.log(pocketObject.title);
-        }
-//        didn't work
-
-//        pocketArray.forEach(function(element, index) {
-//            console.log("\n" + index + " " + element.title);
-//        });
         console.log('\nLast execution: ' + moment().format("MM/D, h:mm:ss a"));
         console.log('=======================================================\n');
-
     } else {
         console.log('Error: ', error);
     }
@@ -114,12 +105,30 @@ function returnAll(error, response, body) {
 
 buildRequestUrl(arg2, subList, limit);
 
-//function sendToPocket(error, response, body){
-//
-//}
-//
-//var action = "add";
-//var
-//var pocketUrl = "https://getpocket.com/v3/send?actions=%5B%7B%22action%22%3A%22archive%22%2C%22time%22%3A1348853312%2C%22item_id%22%3A229279689%7D%5D&access_token=[ACCESS_TOKEN]&consumer_key=[CONSUMER_KEY]";
-//
-//request(, sendToPocket);
+var pocketConfig = {
+    consumer_key: config.pocket.consumerKey,
+    access_token: config.pocket.accessToken
+};
+
+var pocket = new GetPocket(pocketConfig);
+
+function logArrayLink(element, index, array) {
+    console.log(index + ': ' + element.normal_url);
+}
+
+function sendToPocket(pocketArray){
+    var params = {
+      actions: pocketArray
+    };
+
+    pocket.send(params, function(err, resp){
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(resp);
+            var results = resp.action_results;
+            results.forEach(logArrayLink);
+        }
+    });
+
+}
