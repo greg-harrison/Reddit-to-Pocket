@@ -55,11 +55,12 @@ function returnAll(error, response, body) {
             var linkData = "";
             var tagData = "";
             var timeData = "";
+            var pocketAction = "add";
             var dateMonth = moment().format('MMMM');
             var dateYear = moment().format('YYYY');
 
             linkData = resp.data.children[i].data.url;
-            var goodLink = linkData.indexOf("imgur");
+            var goodLink = linkData.indexOf("youtube") || linkData.indexOf("imgur");
 
 
             if (resp.data.children[i].kind !== "t3" || goodLink !== -1) {
@@ -72,7 +73,7 @@ function returnAll(error, response, body) {
                 subredditData = resp.data.children[i].data.subreddit;
                 titleData = resp.data.children[i].data.title;
                 linkData = resp.data.children[i].data.url;
-                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth;
+                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth + ", Test";
                 timeData = moment().format('X');
 
                 console.log('\nNumber: ', i+1);
@@ -81,7 +82,7 @@ function returnAll(error, response, body) {
                 console.log('Link: ', linkData);
                 console.log('Tags: ', tagData);
 
-                pocketObject.action = "add";
+                pocketObject.action = pocketAction;
                 pocketObject.item_id = timeData+"_"+i;
                 pocketObject.tags = tagData;
                 pocketObject.time = timeData;
@@ -89,10 +90,10 @@ function returnAll(error, response, body) {
                 pocketObject.url = linkData;
 
                 pocketArray.push(pocketObject);
-                console.log(pocketArray);
             }
         }
 
+        console.log(pocketArray);
         sendToPocket(pocketArray);
 
         console.log("\n" + pocketArray.length + " items packaged in array");
