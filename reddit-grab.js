@@ -13,7 +13,8 @@ var express = require('express'),
     GetPocket = require('node-getpocket'),
     moment = require('moment'),
     prettyjson = require('prettyjson'),
-    q = require('q');
+    q = require('q'),
+    jsesc = require('jsesc');
 
 var subreddits = ['webdev', 'opensource', 'frontend', 'programming', 'javascript'];
 var arg2 = process.argv[2] || 'all';
@@ -89,11 +90,15 @@ function returnAll(error, response, body) {
                 pocketObject.title = titleData;
                 pocketObject.url = linkData;
 
-                pocketArray.push(pocketObject);
+                var pocketJSON = jsesc(pocketObject, {
+                    'json': true,
+                    'quotes': 'double',
+                    'wrap': true
+                });
+
+                pocketArray.push(pocketJSON);
             }
         }
-
-        console.log(pocketArray);
         sendToPocket(pocketArray);
 
         console.log("\n" + pocketArray.length + " items packaged in array");
@@ -106,6 +111,11 @@ function returnAll(error, response, body) {
 
 buildRequestUrl(arg2, subList, limit);
 
+function logArrayLink(element, index, array) {
+    console.log(index + ': ' + element.normal_url);
+}
+
+
 var pocketConfig = {
     consumer_key: config.pocket.consumerKey,
     access_token: config.pocket.accessToken
@@ -113,16 +123,16 @@ var pocketConfig = {
 
 var pocket = new GetPocket(pocketConfig);
 
-function logArrayLink(element, index, array) {
-    console.log(index + ': ' + element.normal_url);
-}
+console.log(pocket);
+
 
 function sendToPocket(pocketArray){
+
     var params = {
       actions: pocketArray
     };
 
-    pocket.send(params, function(err, resp){
+    pocket.modify(params, function(err, resp){
         if (err) {
             console.log(err);
         } else {
