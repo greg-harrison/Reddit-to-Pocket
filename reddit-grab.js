@@ -37,6 +37,7 @@ var buildRequestUrl = function (arg2, subList, limit) {
         subList.forEach(function (element) {
             var url = "http://www.reddit.com/r/" + element + "/hot.json?limit=" + limit + "";
             request(url, returnAll);
+            console.log(element);
         });
     } else {
         var url = "http://www.reddit.com/r/" + subList + "/hot.json?limit=" + limit + "";
@@ -84,19 +85,12 @@ function returnAll(error, response, body) {
                 console.log('Tags: ', tagData);
 
                 pocketObject.action = pocketAction;
-                pocketObject.item_id = timeData+"_"+i;
                 pocketObject.tags = tagData;
                 pocketObject.time = timeData;
                 pocketObject.title = titleData;
                 pocketObject.url = linkData;
 
-                var pocketJSON = jsesc(pocketObject, {
-                    'json': true,
-                    'quotes': 'double',
-                    'wrap': true
-                });
-
-                pocketArray.push(pocketJSON);
+                pocketArray.push(pocketObject);
             }
         }
         sendToPocket(pocketArray);
@@ -123,9 +117,6 @@ var pocketConfig = {
 
 var pocket = new GetPocket(pocketConfig);
 
-console.log(pocket);
-
-
 function sendToPocket(pocketArray){
 
     var params = {
@@ -136,7 +127,6 @@ function sendToPocket(pocketArray){
         if (err) {
             console.log(err);
         } else {
-            console.log(resp);
             var results = resp.action_results;
             results.forEach(logArrayLink);
         }
