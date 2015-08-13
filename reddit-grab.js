@@ -1,7 +1,4 @@
 // Todo:
-//  Need to fix the issue where using the Each parameter sends 40 duped items to pocket, and causes the android app to crash ;D
-//  Clean up unused variables/libraries
-//  Need to figure out why I'm getting "{action_results: [ false ], status: 1}" when I run '$node reddit-grab all 1'
 //  Research the best way to convert this to a web app.
 
 var express = require('express'),
@@ -11,10 +8,7 @@ var express = require('express'),
     http = require('http'),
     process = require('process'),
     GetPocket = require('node-getpocket'),
-    moment = require('moment'),
-    prettyjson = require('prettyjson'),
-    q = require('q'),
-    jsesc = require('jsesc');
+    moment = require('moment');
 
 var subreddits = ['webdev', 'opensource', 'frontend', 'programming', 'javascript'];
 var arg2 = process.argv[2] || 'all';
@@ -36,7 +30,7 @@ var buildRequestUrl = function (arg2, subList, limit) {
     if (arg2 == 'each') {
         subList.forEach(function (element) {
             var url = "http://www.reddit.com/r/" + element + "/hot.json?limit=" + limit + "";
-            request(url, returnAll);
+            request(url, returnEach);
             console.log(element);
         });
     } else {
@@ -51,15 +45,15 @@ function returnAll(error, response, body) {
         var respLength = limit || resp.data.children.length;
 
         for (var i = 0; i < respLength; i++) {
-            var pocketObject = {};
-            var subredditData = "";
-            var titleData = "";
-            var linkData = "";
-            var tagData = "";
-            var timeData = "";
-            var pocketAction = "add";
-            var dateMonth = moment().format('MMMM');
-            var dateYear = moment().format('YYYY');
+            var pocketObject = {},
+                subredditData = "",
+                titleData = "",
+                linkData = "",
+                tagData = "",
+                timeData = "",
+                pocketAction = "add",
+                dateMonth = moment().format('MMMM'),
+                dateYear = moment().format('YYYY');
 
             linkData = resp.data.children[i].data.url;
             var goodLink = linkData.indexOf("youtube") || linkData.indexOf("imgur");
@@ -100,6 +94,63 @@ function returnAll(error, response, body) {
         console.log('=======================================================\n');
     } else {
         console.log('Error: ', error);
+    }
+}
+
+function returnEach(error, response, body) {
+    if (!error && response.statusCode == 200) {
+        var resp = JSON.parse(body);
+        var respLength = limit || resp.data.children.length;
+        var i;
+
+        for (i = 0; i < respLength; i++) {
+            var pocketObject = {},
+                subredditData = "",
+                titleData = "",
+                linkData = "",
+                tagData = "",
+                timeData = "",
+                pocketAction = "add",
+                dateMonth = moment().format('MMMM'),
+                dateYear = moment().format('YYYY');
+
+            linkData = resp.data.children[i].data.url;
+            var goodLink = linkData.indexOf("youtube") || linkData.indexOf("imgur");
+
+
+            if (resp.data.children[i].kind !== "t3" || goodLink !== -1) {
+                console.log('\nNumber: ', i+1);
+                console.log('This is not a pocketable object');
+                if (goodLink > 0) {
+                    console.log("Reason: We ain't got time for IMGUR BS.");
+                }
+            } else {
+                subredditData = resp.data.children[i].data.subreddit;
+                titleData = resp.data.children[i].data.title;
+                linkData = resp.data.children[i].data.url;
+                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth + ", Test";
+                timeData = moment().format('X');
+
+                console.log('\nNumber: ', i+1);
+                console.log('Subreddit: ', subredditData);
+                console.log('Title: ', titleData);
+                console.log('Link: ', linkData);
+                console.log('Tags: ', tagData);
+
+                pocketObject.action = pocketAction;
+                pocketObject.tags = tagData;
+                pocketObject.time = timeData;
+                pocketObject.title = titleData;
+                pocketObject.url = linkData;
+
+                pocketArray.push(pocketObject);
+
+                if (pocketArray.length == (subList.length * limit)) {
+                    console.log('Length of Request: ', pocketArray.length);
+                    sendToPocket(pocketArray);
+                }
+            }
+        }
     }
 }
 
