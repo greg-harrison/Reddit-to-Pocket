@@ -69,7 +69,7 @@ function returnAll(error, response, body) {
                 subredditData = resp.data.children[i].data.subreddit;
                 titleData = resp.data.children[i].data.title;
                 linkData = resp.data.children[i].data.url;
-                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth + ", Test";
+                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth;
                 timeData = moment().format('X');
 
                 console.log('\nNumber: ', i+1);
