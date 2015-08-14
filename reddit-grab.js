@@ -10,7 +10,7 @@ var express = require('express'),
     GetPocket = require('node-getpocket'),
     moment = require('moment');
 
-var subreddits = ['webdev', 'opensource', 'frontend', 'programming', 'javascript'];
+var subreddits = ['webdev', 'opensource', 'frontend', 'programming', 'javascript', 'dailyprogrammer'];
 var arg2 = process.argv[2] || 'all';
 var subListDefault = setSubListDefault(arg2);
 var subList = process.argv[4] || subListDefault;
@@ -128,7 +128,7 @@ function returnEach(error, response, body) {
                 subredditData = resp.data.children[i].data.subreddit;
                 titleData = resp.data.children[i].data.title;
                 linkData = resp.data.children[i].data.url;
-                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth + ", Test";
+                tagData = "r/"+subredditData + ", " + dateYear + " " + dateMonth;
                 timeData = moment().format('X');
 
                 console.log('\nNumber: ', i+1);
@@ -174,13 +174,14 @@ function sendToPocket(pocketArray){
       actions: pocketArray
     };
 
-    pocket.modify(params, function(err, resp){
-        if (err) {
-            console.log(err);
-        } else {
-            var results = resp.action_results;
-            results.forEach(logArrayLink);
-        }
-    });
+    console.log(params.actions);
+//    pocket.modify(params, function(err, resp){
+//        if (err) {
+//            console.log(err);
+//        } else {
+//            var results = resp.action_results;
+//            results.forEach(logArrayLink);
+//        }
+//    });
 
 }

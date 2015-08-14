@@ -1,6 +1,11 @@
 # Reddit-to-Pocket
 
-Just a simple script that pulls posts from the subreddits listed in the 'subreddits' array and pushes them to your Pocket account
+UPDATE: I have begun working on an Ionic application to meet the same goal on an Android (or IOS) device.
+That project is [here](https://github.com/8bitg/webbit-to-pocket).
+
+---
+
+A simple script that pulls posts from the subreddits listed in the 'subreddits' array and pushes them to your Pocket account
 
 After doing an npm install, you will need to go to http://getpocket.com/developer/docs/authentication and register your application
 Once you've gotten a ConsumerKey, you can use that coupled with a valid account to set up a connection to your Pocket Account
